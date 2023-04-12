@@ -23,3 +23,4 @@
 	</label>
 	<button type="submit">login</button>
 </form>
+<button on:click={() => goto('/signup')}>signup</button>
