@@ -32,7 +32,7 @@
 </script>
 
 <p>{$rtcClient.roomName}</p>
-<video bind:this={videoRef} autoplay muted={true} />
+<video playsinline bind:this={videoRef} autoplay muted={true} />
 
 <button on:click={handleMuteButtonClick}>
 	{muted ? 'ミュート解除' : 'ミュートする'}

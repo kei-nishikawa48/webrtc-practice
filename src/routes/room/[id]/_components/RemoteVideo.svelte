@@ -16,4 +16,4 @@
 	});
 </script>
 
-<video bind:this={remoteVideoRef} autoplay muted={false} />
+<video bind:this={remoteVideoRef} playsinline autoplay muted={false} />
