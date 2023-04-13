@@ -1,7 +1,6 @@
 import {
 	collection,
 	deleteDoc,
-	deleteField,
 	doc,
 	getDocs,
 	onSnapshot,
@@ -81,11 +80,9 @@ export class RTCClient {
 			collection(fireStore, `rooms/${this.roomId}/member`),
 			(snapshot) => {
 				const member = snapshot.docChanges().flatMap((v) => {
-					console.log(v.doc.data());
 					if (v.doc.id === this.localPeerId) {
 						return [];
 					} else {
-						console.log(v.type);
 						if (v.type === "added") {
 							const connection = this.addConnection();
 							connection.addTracks(
@@ -110,7 +107,6 @@ export class RTCClient {
 					}
 				});
 				this.member = [...this.member, ...member];
-				console.log(member);
 				this.setRtcClient();
 			},
 		);
@@ -120,8 +116,6 @@ export class RTCClient {
 		if (this.roomId && this.localPeerId) {
 			this.firebaseSignallingClient.setRoomId(this.roomId);
 			this.firebaseSignallingClient.setPeerIds(this.localPeerId, "");
-
-			await this.firebaseSignallingClient.joinRoom(user);
 		}
 	}
 	async removeConnection() {
@@ -163,7 +157,6 @@ export class RTCClient {
 					if (!doc.exists()) {
 						return;
 					}
-					console.log(data);
 					const { type, sender } = data;
 					const connection = this.connections.find(
 						(v) => v.remotePeerId === doc.id,
@@ -297,7 +290,6 @@ class Connection {
 			);
 		}
 		if (this.localDescription) {
-			console.log(this.localDescription);
 			await this.firebaseSignallingClient.sendOffer(this.localDescription);
 		}
 	}
@@ -306,7 +298,8 @@ class Connection {
 			this.remotePeerId = sender;
 			this.setOnicecandidateCallback();
 			this.setOntrack();
-			console.log("setRemoteDescription", sessionDescription);
+			const SessionDescription = new RTCSessionDescription(sessionDescription);
+			console.log("setRemoteDescription", SessionDescription);
 			await this.setRemoteDescription(sessionDescription);
 			const answer = await this.rtcPeerConnection.createAnswer();
 			console.log("setLocalDescription answer:", answer);
@@ -335,6 +328,7 @@ class Connection {
 	) {
 		try {
 			const SessionDescription = new RTCSessionDescription(sessionDescription);
+
 			await this.setRemoteDescription(SessionDescription);
 		} catch (er) {
 			console.error(er);
@@ -343,6 +337,9 @@ class Connection {
 	async addIceCandidate(candidate: RTCIceCandidateInit) {
 		try {
 			const iceCandidate = new RTCIceCandidate(candidate);
+			if (iceCandidate.usernameFragment === candidate.usernameFragment) {
+				return;
+			}
 			if (this.rtcPeerConnection.remoteDescription) {
 				console.log("iceCandidate:", iceCandidate);
 				await this.rtcPeerConnection.addIceCandidate(iceCandidate);

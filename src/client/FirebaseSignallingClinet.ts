@@ -1,4 +1,11 @@
-import { collection, deleteDoc, doc, setDoc } from "firebase/firestore";
+import {
+	collection,
+	deleteDoc,
+	doc,
+	getDoc,
+	getDocs,
+	setDoc,
+} from "firebase/firestore";
 import { fireStore } from "../firebase_config";
 
 export default class FirebaseSignallingClient {
@@ -18,14 +25,21 @@ export default class FirebaseSignallingClient {
 		this.remotePeerId = remotePeerId;
 	}
 	async joinRoom(user: { name: string }) {
-		setDoc(
-			doc(fireStore, `rooms/${this.roomId}/member/${this.localPeerId}`),
-			user,
+		const ref = doc(
+			fireStore,
+			`rooms/${this.roomId}/member/${this.localPeerId}`,
 		);
+		const connections = await getDocs(collection(ref, "connection"));
+		const document = await getDoc(ref);
+		if (document.exists()) {
+			deleteDoc(ref);
+			connections.docs.forEach((doc) => {
+				deleteDoc(doc.ref);
+			});
+		}
+		setDoc(ref, user);
 	}
-	async joinRoomVideo(user: { name: string }) {
-		setDoc(doc(fireStore, `rooms/${this.roomId}/member/video`), user);
-	}
+
 	async sendOffer(sessionDescription: RTCSessionDescription) {
 		await setDoc(this.targetRef, {
 			type: "offer",
