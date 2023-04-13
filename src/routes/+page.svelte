@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { auth, fireStore } from '../firebase_config';
+	import { fireStore } from '../firebase_config';
 	import { addDoc, collection, onSnapshot } from 'firebase/firestore';
 	import { user } from '../stores/user';
 	import { rtcClient } from '../stores/rtcClient';
 	import { goto } from '$app/navigation';
-	import { signOut } from 'firebase/auth';
 
 	type Room = { name: string; host: string; id: string };
 	let rooms: Room[] = [];
@@ -47,5 +46,3 @@
 		<button on:click={async () => await joinRoom(room.id, room.name)}>{room.name}</button>
 	</div>
 {/each}
-
-<button on:click={async () => await signOut(auth)}>logout</button>
